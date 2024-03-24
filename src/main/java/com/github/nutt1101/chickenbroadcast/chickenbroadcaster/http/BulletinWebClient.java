@@ -27,12 +27,23 @@ public class BulletinWebClient extends org.htmlunit.WebClient {
     final
     BulletinJsonUtils bulletinJsonUtils;
 
+    /**
+     * disable the css and js to make the requisition speed up
+     */
     @PostConstruct
     void setup() {
         this.getOptions().setCssEnabled(false);
         this.getOptions().setJavaScriptEnabled(false);
     }
 
+    /**
+     * To send the request to bulletin api and get back the bulletin data.
+     * @param poolId the id of the department id that data you want to fetch
+     * @param startIndex start index of the bulletin
+     * @param endIndex end index of the bulletin (not contains the end)
+     * @return a list of bulletin that you want to fetch
+     * @throws IOException check
+     */
     public List<Bulletin> fetch(String poolId, int startIndex, int endIndex) throws IOException {
         WebRequest request = this.prepareRequest(
                 poolId, startIndex, endIndex
@@ -42,6 +53,12 @@ public class BulletinWebClient extends org.htmlunit.WebClient {
         return this.bulletinJsonUtils.convert(jsonString);
     }
 
+    /**
+     * Handle the requested page to json string.
+     * @param page the requested page
+     * @return the page to json string
+     * @throws IOException check
+     */
     String unexpectedPageToJsonString(UnexpectedPage page) throws IOException {
         String jsonString;
         try (InputStream stream = page.getInputStream()) {
@@ -50,6 +67,14 @@ public class BulletinWebClient extends org.htmlunit.WebClient {
         return jsonString;
     }
 
+    /**
+     * To prepare the bulletin requestion object
+     * @param poolId the id of the department id that data you want to fetch
+     * @param startIndex start index of the bulletin
+     * @param endIndex end index of the bulletin (not contains the end)
+     * @return was set up requestion
+     * @throws MalformedURLException URL parsed error
+     */
     WebRequest prepareRequest(String poolId, int startIndex, int endIndex) throws MalformedURLException {
         WebRequest request = new WebRequest(
             new URL(API),

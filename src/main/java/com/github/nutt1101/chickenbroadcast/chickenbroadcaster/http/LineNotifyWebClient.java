@@ -10,11 +10,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +52,7 @@ public class LineNotifyWebClient extends WebClient {
             reqPara.add(
                     new NameValuePair("imageFullsize", parameter.getImageURL().toString())
             );
-            if (parameter.isImageFile()) reqPara.add(
+            if (parameter.isUploadToLineServer()) reqPara.add(
                     new NameValuePair("imageFile", "true")
             );
         }

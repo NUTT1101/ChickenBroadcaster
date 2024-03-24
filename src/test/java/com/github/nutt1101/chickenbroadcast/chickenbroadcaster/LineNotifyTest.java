@@ -18,7 +18,7 @@ public class LineNotifyTest {
     @Test
     void test() throws IOException {
           LineParameter parameter = LineParameter.builder()
-                   .message("Shit")
+                   .message("Test Message\nPowered by NUTT1101\ngithub: https://github.com/NUTT1101/ChickenBroadcaster/")
                   .lineSticker(
                           LineSticker.builder()
                                   .stickerPackageId(789)

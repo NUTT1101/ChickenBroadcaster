@@ -21,6 +21,12 @@ public class BulletinJsonUtils {
     final String URL = "newsurl";
     final String IMAGE = "img";
 
+    /**
+     * To convert to json string to jsonObject and return the list of all bulletins
+     * @param jsonString  json string
+     * @return list off all bulletins
+     * @throws MalformedURLException URL parsed error
+     */
     public List<Bulletin> convert(String jsonString) throws MalformedURLException {
         JSONObject jsonObject = new JSONObject(jsonString);
         JSONArray array = jsonObject.getJSONArray("news");
@@ -36,6 +42,12 @@ public class BulletinJsonUtils {
         return bulletinList;
     }
 
+    /**
+     * To convert jsonObject to list of bulletin object
+     * @param object all bulletins jsonObject
+     * @return converted bulletin
+     * @throws MalformedURLException URL parsed error
+     */
     Bulletin jsonObjToBulletin(JSONObject object) throws MalformedURLException {
         int msgId = object.getInt(MSG_ID);
         String title = object.getString(TITLE);

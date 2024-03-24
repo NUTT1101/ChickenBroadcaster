@@ -1,55 +1,64 @@
 package com.github.nutt1101.chickenbroadcast.chickenbroadcaster.scheduled;
 
-import com.github.nutt1101.chickenbroadcast.chickenbroadcaster.http.BulletinWebClient;
-import com.github.nutt1101.chickenbroadcast.chickenbroadcaster.http.LineNotifyWebClient;
 import com.github.nutt1101.chickenbroadcast.chickenbroadcaster.model.Bulletin;
-import com.github.nutt1101.chickenbroadcast.chickenbroadcaster.model.LineParameter;
+import com.github.nutt1101.chickenbroadcast.chickenbroadcaster.model.Department;
+import com.github.nutt1101.chickenbroadcast.chickenbroadcaster.utils.BulletinUtils;
+import com.github.nutt1101.chickenbroadcast.chickenbroadcaster.utils.LineNotifyMessageUtils;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
+@Log4j2
 public class BulletinScanner {
-    final BulletinWebClient bulletinWebClient;
-    final LineNotifyWebClient lineNotifyWebClient;
+    final BulletinUtils bulletinUtils;
+    final LineNotifyMessageUtils lineNotifyMessageUtils;
 
-    int latestBulletinId = 1;
+    List<Bulletin> currentBulletinsPool;
+    int MAX_POOL_LIMIT = 10;
+
+    @PostConstruct
+    void setup() {
+        currentBulletinsPool = new ArrayList<>();
+    }
 
     @Scheduled(cron = "0 * * * * *")
     void run() {
         try {
-            List<Bulletin> bulletinList = bulletinWebClient.fetch(
-                    "5100", 0, 1
+            List<Bulletin> newFetchedBulletins = bulletinUtils.getTopBulletins(
+                    Department.CSIE,
+                    MAX_POOL_LIMIT
             );
-            Bulletin current = bulletinList.get(0);
-            if (latestBulletinId == current.getMsgId()) return;
 
-            latestBulletinId = current.getMsgId();
+            List<Bulletin> foundLatest = bulletinUtils.findLatestBulletins(
+                    currentBulletinsPool, newFetchedBulletins
+            );
 
-            String notification = notification(current);
-            LineParameter parameter = LineParameter.builder()
-                    .message(notification)
-                    .build();
-            if (current.getImage() != null) parameter.setImageURL(current.getImage());
+            if (foundLatest.isEmpty()) return;
 
-            lineNotifyWebClient.send(parameter);
+            if (currentBulletinsPool.isEmpty()) {
+                currentBulletinsPool.addAll(foundLatest);
+                return;
+            }
+
+            for (Bulletin bulletin : foundLatest) {
+                log.info("found latest bulletin: " + bulletin.getTitle());
+                lineNotifyMessageUtils.sendNotification(bulletin);
+            }
+
+            while (currentBulletinsPool.size() > MAX_POOL_LIMIT) {
+                Bulletin removed = currentBulletinsPool.remove(0);
+                log.info(removed.getMsgId() + " removed");
+            }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error("error", e);
         }
-    }
-
-    String notification(Bulletin bulletin) {
-        return String.join(
-                "\n",
-                List.of(
-                        "",
-                        bulletin.getTitle(),
-                        bulletin.getUrl().toString()
-                )
-        );
     }
 }
