@@ -15,7 +15,7 @@ public class BulletinFetchTest {
     @Test
     void test() {
         try {
-            webClient.fetch("5100", 0 ,20).forEach(
+            webClient.fetch("1", 0 ,5).forEach(
                     System.out::println
             );
         } catch (IOException e) {
