@@ -10,6 +10,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,7 +33,10 @@ public class BulletinUtils {
 
         return newPool
                 .stream()
-                .filter(bulletin -> !existsPool.contains(bulletin.getMsgId()))
+                .filter(bulletin ->
+                        !existsPool.contains(bulletin.getMsgId()) &&
+                                (bulletin.getDate().isEqual(LocalDate.now()) || bulletin.getDate().isAfter(LocalDate.now()))
+                )
                 .collect(Collectors.toList());
     }
 }

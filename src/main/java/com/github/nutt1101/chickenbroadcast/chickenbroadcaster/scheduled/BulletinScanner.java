@@ -32,29 +32,29 @@ public class BulletinScanner {
     @Scheduled(cron = "0 * * * * *")
     void run() {
         try {
-            List<Bulletin> newFetchedBulletins = bulletinUtils.getTopBulletins(
-                    Department.CSIE,
+            List<Bulletin> newFetchedBulletins = this.bulletinUtils.getTopBulletins(
+                    Department.STUDENT,
                     MAX_POOL_LIMIT
             );
 
-            List<Bulletin> foundLatest = bulletinUtils.findLatestBulletins(
-                    currentBulletinsPool, newFetchedBulletins
+            List<Bulletin> foundLatest = this.bulletinUtils.findLatestBulletins(
+                    this.currentBulletinsPool, newFetchedBulletins
             );
 
             if (foundLatest.isEmpty()) return;
 
-            if (currentBulletinsPool.isEmpty()) {
-                currentBulletinsPool.addAll(foundLatest);
+            if (this.currentBulletinsPool.isEmpty()) {
+                this.currentBulletinsPool.addAll(foundLatest);
                 return;
             }
 
             for (Bulletin bulletin : foundLatest) {
                 log.info("found latest bulletin: " + bulletin.getTitle());
-                lineNotifyMessageUtils.sendNotification(bulletin);
+                this.lineNotifyMessageUtils.sendNotification(bulletin);
             }
 
             while (currentBulletinsPool.size() > MAX_POOL_LIMIT) {
-                Bulletin removed = currentBulletinsPool.remove(0);
+                Bulletin removed = this.currentBulletinsPool.remove(0);
                 log.info(removed.getMsgId() + " removed");
             }
         } catch (IOException e) {
