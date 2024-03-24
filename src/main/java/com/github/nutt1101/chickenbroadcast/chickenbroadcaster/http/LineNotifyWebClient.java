@@ -24,17 +24,26 @@ public class LineNotifyWebClient extends WebClient {
     @Value("${line_notify.api}")
     String API;
 
+    String MESSAGE = "message";
+    String IMAGE_THUMBNAIL = "imageThumbnail";
+    String  IMAGE_FULL_SIZE = "imageFullsize";
+    String IMAGE_FILE = "imageFile";
+    String STICKER_PACKAGE_ID = "stickerPackageId";
+    String STICKER_ID = "stickerId";
+    String NOTIFICATION_DISABLED = "notificationDisabled";
+
+
     public void send(LineParameter parameter) throws IOException {
-        WebRequest request = prepareRequest(parameter);
+        WebRequest request = this.prepareRequest(parameter);
         this.getPage(request);
     }
 
     public WebRequest prepareRequest(LineParameter lineParameter) throws MalformedURLException {
         WebRequest request = new WebRequest(new URL(API), HttpMethod.POST);
-        request.setAdditionalHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+        request.setAdditionalHeader("Content-Type", "application/x-www-form-urlencoded;");
         request.setAdditionalHeader("Authorization", "Bearer " + TOKEN);
         request.setRequestParameters(
-                prepareRequestParameters(lineParameter)
+                this.prepareRequestParameters(lineParameter)
         );
         request.setCharset(StandardCharsets.UTF_8);
         return request;
@@ -43,31 +52,31 @@ public class LineNotifyWebClient extends WebClient {
     public List<NameValuePair> prepareRequestParameters(LineParameter parameter) {
         List<NameValuePair> reqPara = new ArrayList<>();
         reqPara.add(
-                new NameValuePair("message", parameter.getMessage())
+                new NameValuePair(this.MESSAGE, parameter.getMessage())
         );
         if (parameter.getImageURL() != null) {
             reqPara.add(
-                    new NameValuePair("imageThumbnail", parameter.getImageURL().toString())
+                    new NameValuePair(this.IMAGE_THUMBNAIL, parameter.getImageURL().toString())
             );
             reqPara.add(
-                    new NameValuePair("imageFullsize", parameter.getImageURL().toString())
+                    new NameValuePair(this.IMAGE_FULL_SIZE, parameter.getImageURL().toString())
             );
             if (parameter.isUploadToLineServer()) reqPara.add(
-                    new NameValuePair("imageFile", "true")
+                    new NameValuePair(this.IMAGE_FILE, Boolean.TRUE.toString())
             );
         }
 
         if (parameter.getLineSticker() != null) {
             reqPara.add(
-                    new NameValuePair("stickerPackageId", parameter.getLineSticker().getStickerPackageId().toString())
+                    new NameValuePair(this.STICKER_PACKAGE_ID, parameter.getLineSticker().getStickerPackageId().toString())
             );
             reqPara.add(
-                    new NameValuePair("stickerId", parameter.getLineSticker().getStickerId().toString())
+                    new NameValuePair(this.STICKER_ID, parameter.getLineSticker().getStickerId().toString())
             );
         }
 
         if (parameter.isNotificationDisabled()) reqPara.add(
-                new NameValuePair("notificationDisabled", "true")
+                new NameValuePair(this.NOTIFICATION_DISABLED, Boolean.TRUE.toString())
         );
         return reqPara;
     }
